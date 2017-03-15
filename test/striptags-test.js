@@ -78,6 +78,13 @@ describe('striptags', function() {
 
             assert.equal(striptags(html), text);
         });
+        
+        it('only tags works', function() {
+            let html = '<a attr="foo">lorem</a> ipsum',
+                text = '<a attr="foo"></a>';
+
+            assert.equal(striptags(html, {only_tags: true}), text);
+        });        
     });
 
     describe('#allowed_tags', function() {
@@ -85,14 +92,14 @@ describe('striptags', function() {
             let html = '<strong>lorem ipsum</strong>',
                 allowed_tags = '<strong>';
 
-            assert.equal(striptags(html, allowed_tags), html);
+            assert.equal(striptags(html, {allowed_tags}), html);
         });
 
         it('should take an array', function() {
             let html = '<strong>lorem <em>ipsum</em></strong>',
                 allowed_tags = ['strong', 'em'];
 
-            assert.equal(striptags(html, allowed_tags), html);
+            assert.equal(striptags(html, {allowed_tags}), html);
         });
     });
 
@@ -101,7 +108,7 @@ describe('striptags', function() {
             let html = '<a href="https://example.com">lorem ipsum</a>',
                 allowed_tags = '<a>';
 
-            assert.equal(striptags(html, allowed_tags), html);
+            assert.equal(striptags(html, {allowed_tags}), html);
         });
 
         it('should strip extra < within tags', function() {
@@ -109,7 +116,7 @@ describe('striptags', function() {
                 text = '<div>lorem ipsum</div>',
                 allowed_tags = '<div>';
 
-            assert.equal(striptags(html, allowed_tags), text);
+            assert.equal(striptags(html, {allowed_tags}), text);
         });
 
         it('should strip <> within quotes', function() {
@@ -117,7 +124,7 @@ describe('striptags', function() {
                 text = '<a href="script">lorem ipsum</a>',
                 allowed_tags = '<a>';
 
-            assert.equal(striptags(html, allowed_tags), text);
+            assert.equal(striptags(html, {allowed_tags}), text);
         });
     });
 
@@ -128,7 +135,7 @@ describe('striptags', function() {
                 tag_replacement = '\n',
                 text = 'Line One\nLine Two';
 
-            assert.equal(striptags(html, allowed_tags, tag_replacement), text);
+            assert.equal(striptags(html, {allowed_tags, tag_replacement}), text);
         });
     });
 
@@ -146,7 +153,7 @@ describe('striptags', function() {
         });
 
         it('should work with allowable_tags', function() {
-            let striptags_stream = striptags.init_streaming_mode(['strong']);
+            let striptags_stream = striptags.init_streaming_mode({allowed_tags: ['strong']});
 
             let part_one   = striptags_stream('lorem ipsum <stro');
             let part_two   = striptags_stream('ng>dolor sit <');
