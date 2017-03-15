@@ -9,21 +9,23 @@
     const ALLOWED_TAGS_REGEX  = /<(\w*)>/g;
     const NORMALIZE_TAG_REGEX = /<\/?([^\s\/>]+)/;
 
-    function striptags(html, allowable_tags, tag_replacement) {
+    function striptags(html, options={}) {
         html            = html || '';
-        allowable_tags  = allowable_tags || [];
-        tag_replacement = tag_replacement || '';
+        allowable_tags  = options.allowable_tags || [];
+        tag_replacement = options.tag_replacement || '';
+        only_tags       = !!options.only_tags;
 
-        let context = init_context(allowable_tags, tag_replacement);
+        let context = init_context(allowable_tags, tag_replacement, only_tags);
 
         return striptags_internal(html, context);
     }
 
-    function init_striptags_stream(allowable_tags, tag_replacement) {
-        allowable_tags  = allowable_tags || [];
-        tag_replacement = tag_replacement || '';
+    function init_striptags_stream(options={}) {
+        allowable_tags  = options.allowable_tags || [];
+        tag_replacement = options.tag_replacement || '';
+        only_tags       = !!options.only_tags;
 
-        let context = init_context(allowable_tags, tag_replacement);
+        let context = init_context(allowable_tags, tag_replacement, only_tags);
 
         return function striptags_stream(html) {
             return striptags_internal(html || '', context);
@@ -32,12 +34,13 @@
 
     striptags.init_streaming_mode = init_striptags_stream;
 
-    function init_context(allowable_tags, tag_replacement) {
+    function init_context(allowable_tags, tag_replacement, only_tags) {
         allowable_tags = parse_allowable_tags(allowable_tags);
 
         return {
             allowable_tags,
             tag_replacement,
+            only_tags,
 
             state         : STATE_PLAINTEXT,
             tag_buffer    : '',
@@ -49,6 +52,7 @@
     function striptags_internal(html, context) {
         let allowable_tags  = context.allowable_tags;
         let tag_replacement = context.tag_replacement;
+        let only_tags       = context.only_tags;
 
         let state         = context.state;
         let tag_buffer    = context.tag_buffer;
@@ -67,7 +71,9 @@
                         break;
 
                     default:
-                        output += char;
+                        if (!only_tags) {
+                            output += char;
+                        }
                         break;
                 }
             }
